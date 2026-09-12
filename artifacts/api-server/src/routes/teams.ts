@@ -1,5 +1,9 @@
-import { Router, type IRouter } from "express";
+import express, { Router, type IRouter } from "express";
 import { asc, desc, eq } from "drizzle-orm";
+import os from "node:os";
+import path from "node:path";
+import { randomUUID } from "node:crypto";
+import fs from "node:fs/promises";
 import { db, teamsTable, pingsTable, ticketsTable } from "@workspace/db";
 import {
   CreateTeamBody,
@@ -12,8 +16,13 @@ import {
   CreateTeamPingParams,
   CreateTeamPingBody,
   CreateTeamPingResponse,
+  CreateTeamAudioPingParams,
+  CreateTeamAudioPingResponse,
   ListTeamsResponse,
 } from "@workspace/api-zod";
+import { logger } from "../lib/logger";
+import { transcribeAudioFile } from "../lib/voice-transcriber";
+import { summarizeVoiceNote } from "../lib/voice-summarizer";
 
 const router: IRouter = Router();
 
@@ -161,5 +170,69 @@ router.post("/teams/:teamId/pings", async (req, res): Promise<void> => {
 
   res.status(201).json(CreateTeamPingResponse.parse(ping));
 });
+
+router.post(
+  "/teams/:teamId/pings/audio",
+  express.raw({ type: ["audio/wav", "audio/x-wav"], limit: "20mb" }),
+  async (req, res): Promise<void> => {
+    const params = CreateTeamAudioPingParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
+
+    if (!Buffer.isBuffer(req.body) || req.body.length === 0) {
+      res.status(400).json({ error: "Request body must be a non-empty audio/wav payload" });
+      return;
+    }
+
+    const [team] = await db
+      .select()
+      .from(teamsTable)
+      .where(eq(teamsTable.id, params.data.teamId));
+
+    if (!team) {
+      res.status(404).json({ error: "Team not found" });
+      return;
+    }
+
+    // Voice notes are short push-to-talk clips, transcribed locally
+    // (whisper.cpp, no external STT key) and summarized by Claude before
+    // landing on the team's timeline as a normal ping.
+    const tempPath = path.join(os.tmpdir(), `pager-voice-${team.id}-${randomUUID()}.wav`);
+    await fs.writeFile(tempPath, req.body);
+
+    let note: string;
+    try {
+      const transcript = await transcribeAudioFile(tempPath);
+      note =
+        transcript.length > 0
+          ? await summarizeVoiceNote({ team, transcript })
+          : "Voice note received, but no speech was detected.";
+    } catch (err) {
+      logger.error({ err, teamId: team.id }, "Voice note transcription/summarization failed");
+      note = "Voice note received, but it could not be processed.";
+    } finally {
+      await fs.unlink(tempPath).catch(() => {});
+    }
+
+    const [ping] = await db
+      .insert(pingsTable)
+      .values({
+        teamId: team.id,
+        source: "team_audio",
+        note,
+        helpType: null,
+      })
+      .returning();
+
+    await db
+      .update(teamsTable)
+      .set({ lastPingAt: new Date() })
+      .where(eq(teamsTable.id, team.id));
+
+    res.status(201).json(CreateTeamAudioPingResponse.parse(ping));
+  },
+);
 
 export default router;

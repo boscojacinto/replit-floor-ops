@@ -30,7 +30,7 @@ import {
   getTicketStatusColor,
   getTicketStatusLabel
 } from "@/lib/display-utils";
-import { Github, Globe, TerminalSquare, MessagesSquare, CheckCircle, Trash2, Edit3, Send, Play, Clock } from "lucide-react";
+import { Github, Globe, TerminalSquare, MessagesSquare, CheckCircle, Trash2, Edit3, Send, Play, Clock, Mic } from "lucide-react";
 import type { Ping, Ticket, HelpType, Phase } from "@workspace/api-client-react/src/generated/api.schemas";
 
 export default function TeamDossier() {
@@ -322,6 +322,8 @@ function PingItem({ ping }: { ping: Ping }) {
           <MessagesSquare className="w-4 h-4 text-primary" />
         ) : ping.source === 'system' ? (
           <TerminalSquare className="w-4 h-4 text-muted-foreground" />
+        ) : ping.source === 'team_audio' ? (
+          <Mic className="w-4 h-4 text-secondary-foreground" />
         ) : (
           <Clock className="w-4 h-4 text-secondary-foreground" />
         )}

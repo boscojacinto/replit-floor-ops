@@ -111,7 +111,7 @@ export const GetTeamResponse = zod.object({
   "pings": zod.array(zod.object({
   "id": zod.number().int(),
   "teamId": zod.number().int(),
-  "source": zod.enum(['team_checkin', 'team_signal', 'moderator_note', 'system']),
+  "source": zod.enum(['team_checkin', 'team_signal', 'team_audio', 'moderator_note', 'system']),
   "helpType": zod.union([zod.enum(['fine', 'stuck', 'page_now', 'do_not_disturb']),zod.null()]),
   "note": zod.string(),
   "createdAt": zod.coerce.date()
@@ -198,7 +198,7 @@ export const CreateTeamPingParams = zod.object({
 
 
 export const CreateTeamPingBody = zod.object({
-  "source": zod.enum(['team_checkin', 'team_signal', 'moderator_note', 'system']),
+  "source": zod.enum(['team_checkin', 'team_signal', 'team_audio', 'moderator_note', 'system']),
   "note": zod.string().min(1),
   "helpType": zod.enum(['fine', 'stuck', 'page_now', 'do_not_disturb']).optional()
 })
@@ -206,7 +206,24 @@ export const CreateTeamPingBody = zod.object({
 export const CreateTeamPingResponse = zod.object({
   "id": zod.number().int(),
   "teamId": zod.number().int(),
-  "source": zod.enum(['team_checkin', 'team_signal', 'moderator_note', 'system']),
+  "source": zod.enum(['team_checkin', 'team_signal', 'team_audio', 'moderator_note', 'system']),
+  "helpType": zod.union([zod.enum(['fine', 'stuck', 'page_now', 'do_not_disturb']),zod.null()]),
+  "note": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Upload a push-to-talk voice note from a team's pager; transcribed and summarized server-side into a ping
+ */
+export const CreateTeamAudioPingParams = zod.object({
+  "teamId": zod.coerce.number().int()
+})
+
+export const CreateTeamAudioPingResponse = zod.object({
+  "id": zod.number().int(),
+  "teamId": zod.number().int(),
+  "source": zod.enum(['team_checkin', 'team_signal', 'team_audio', 'moderator_note', 'system']),
   "helpType": zod.union([zod.enum(['fine', 'stuck', 'page_now', 'do_not_disturb']),zod.null()]),
   "note": zod.string(),
   "createdAt": zod.coerce.date()

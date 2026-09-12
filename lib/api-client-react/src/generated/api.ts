@@ -563,6 +563,95 @@ export const useCreateTeamPing = <TError = ErrorType<void>,
       return useMutation(getCreateTeamPingMutationOptions(options));
     }
 
+export const getCreateTeamAudioPingUrl = (teamId: number,) => {
+
+
+
+
+  return `/api/teams/${teamId}/pings/audio`
+}
+
+/**
+ * @summary Upload a push-to-talk voice note from a team's pager; transcribed and summarized server-side into a ping
+ */
+export const createTeamAudioPing = async (teamId: number,
+    createTeamAudioPingBody: Blob, options?: Parameters<typeof customFetch>[1]): Promise<Ping> => {
+
+    const getHeaders = (h?: NonNullable<RequestInit['headers']>): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Symbol.iterator in h) {
+      return Object.fromEntries(
+        Array.from(h as Iterable<Iterable<string>>, (entry) => Array.from(entry) as [string, string]),
+      );
+    }
+    const headers: Record<string, string | readonly string[]> = {};
+    for (const [name, value] of Object.entries<string | readonly string[] | undefined>(h)) {
+      if (value !== undefined) headers[name] = value;
+    }
+    return headers;
+  };
+return customFetch<Ping>(getCreateTeamAudioPingUrl(teamId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'audio/wav', ...getHeaders(options?.headers) },
+    body: createTeamAudioPingBody
+  }
+);}
+
+
+
+
+
+export const getCreateTeamAudioPingMutationKey = () => ['createTeamAudioPing'] as const;
+
+export const getCreateTeamAudioPingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTeamAudioPing>>, TError,CreateTeamAudioPingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createTeamAudioPing>>, TError,CreateTeamAudioPingMutationVariables, TContext> => {
+
+const mutationKey = getCreateTeamAudioPingMutationKey();
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createTeamAudioPing>>, CreateTeamAudioPingMutationVariables> = (props) => {
+          const {teamId,data} = props ?? {};
+
+          return  createTeamAudioPing(teamId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateTeamAudioPingMutationResult = NonNullable<Awaited<ReturnType<typeof createTeamAudioPing>>>
+    export type CreateTeamAudioPingMutationBody = BodyType<Blob>
+    export type CreateTeamAudioPingMutationError = ErrorType<void>
+    export type CreateTeamAudioPingMutationVariables = {teamId: number;data: BodyType<Blob>}
+
+    /**
+ * @summary Upload a push-to-talk voice note from a team's pager; transcribed and summarized server-side into a ping
+ */
+export const useCreateTeamAudioPing = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTeamAudioPing>>, TError,CreateTeamAudioPingMutationVariables, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createTeamAudioPing>>,
+        TError,
+        CreateTeamAudioPingMutationVariables,
+        TContext
+      > => {
+      return useMutation(getCreateTeamAudioPingMutationOptions(options));
+    }
+
 export const getDraftTicketUrl = (teamId: number,) => {
 
 

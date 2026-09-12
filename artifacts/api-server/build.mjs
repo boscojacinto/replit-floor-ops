@@ -29,6 +29,10 @@ async function buildAll() {
     // - use path traversal to read files (e.g. @google-cloud/secret-manager loads sibling .proto files)
     external: [
       "*.node",
+      // Locates its own whisper.cpp checkout via `path.join(__dirname, ...)`
+      // relative to its package folder -- bundling would resolve that
+      // against dist/ (see the __dirname banner override below) instead.
+      "nodejs-whisper",
       "sharp",
       "better-sqlite3",
       "sqlite3",

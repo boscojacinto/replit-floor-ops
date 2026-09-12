@@ -128,6 +128,32 @@ paths:
         "404":
           description: Team not found
 
+  /teams/{teamId}/pings/audio:
+    post:
+      operationId: createTeamAudioPing
+      tags: [teams]
+      summary: Upload a push-to-talk voice note from a team's pager; transcribed and summarized server-side into a ping
+      parameters:
+        - $ref: "#/components/parameters/TeamIdParam"
+      requestBody:
+        required: true
+        content:
+          audio/wav:
+            schema:
+              type: string
+              format: binary
+      responses:
+        "201":
+          description: Ping created from the summarized voice note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ping"
+        "400":
+          description: Missing or empty audio body
+        "404":
+          description: Team not found
+
   /teams/{teamId}/tickets/draft:
     post:
       operationId: draftTicket
@@ -367,7 +393,7 @@ components:
         - denied
     PingSource:
       type: string
-      enum: [team_checkin, team_signal, moderator_note, system]
+      enum: [team_checkin, team_signal, team_audio, moderator_note, system]
     TicketStatus:
       type: string
       enum: [draft, filed, discarded, resolved]

@@ -99,7 +99,7 @@ Full contract: [`lib/api-spec/openapi.yaml`](lib/api-spec/openapi.yaml). All rou
 
 | Tag | Endpoints |
 | --- | --- |
-| `teams` | `GET/POST /teams`, `GET/PATCH /teams/:teamId`, `POST /teams/:teamId/pings`, `POST /teams/:teamId/tickets/draft` |
+| `teams` | `GET/POST /teams`, `GET/PATCH /teams/:teamId`, `POST /teams/:teamId/pings`, `POST /teams/:teamId/pings/audio`, `POST /teams/:teamId/tickets/draft` |
 | `tickets` | `GET /tickets`, `PATCH /tickets/:ticketId`, `POST /tickets/:ticketId/file`, `POST /tickets/:ticketId/discard`, `POST /tickets/:ticketId/resolve` |
 | `dashboard` | `GET /dashboard/summary` |
 | `event` | `GET/PATCH /event` |
@@ -112,6 +112,8 @@ The `pager` endpoints are REST stubs meant for an external device — nothing in
 
 - [`hardware/esp32-s3-pager/README.md`](hardware/esp32-s3-pager/README.md) — a starter firmware sketch (Arduino) for any generic ESP32-S3 devkit that polls the help queue over Serial and acknowledges tickets from a physical button. No display driving.
 - [`hardware/esp32-s3-amoled-pager/README.md`](hardware/esp32-s3-amoled-pager/README.md) — an ESP-IDF firmware project for the Waveshare ESP32-S3-Touch-AMOLED-1.8 that renders the queue on its built-in AMOLED (minutes left, SOS banner, top-of-queue card) and acknowledges tickets with a touch button, built on Waveshare's official managed BSP component.
+
+**Per-team voice notes** — `POST /teams/:teamId/pings/audio` accepts a short WAV clip (meant for a push-to-talk button on a team's own pager), transcribes it locally with whisper.cpp (no external speech-to-text key needed — see [`voice-transcriber.ts`](artifacts/api-server/src/lib/voice-transcriber.ts)), summarizes it with Claude ([`voice-summarizer.ts`](artifacts/api-server/src/lib/voice-summarizer.ts)), and lands it on the team's ping timeline (`source: "team_audio"`) alongside moderator notes and system events. The first transcription in a fresh environment compiles whisper.cpp and downloads the model (~140MB, a couple of minutes); later calls take a few seconds per clip.
 
 ## Deployment
 

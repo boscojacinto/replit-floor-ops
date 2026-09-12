@@ -12,6 +12,7 @@ export type PingSource = typeof PingSource[keyof typeof PingSource];
 export const PingSource = {
   team_checkin: 'team_checkin',
   team_signal: 'team_signal',
+  team_audio: 'team_audio',
   moderator_note: 'moderator_note',
   system: 'system',
 } as const;
