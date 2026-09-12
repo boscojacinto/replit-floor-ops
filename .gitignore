@@ -47,3 +47,6 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Pager hardware — local Wi-Fi credentials, never commit
+hardware/esp32-s3-pager/pager_config.h
