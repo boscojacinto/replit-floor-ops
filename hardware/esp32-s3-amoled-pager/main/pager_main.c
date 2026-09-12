@@ -14,6 +14,7 @@
 
 #include <string.h>
 
+#include "esp_crt_bundle.h"
 #include "esp_event.h"
 #include "esp_http_client.h"
 #include "esp_log.h"
@@ -393,6 +394,7 @@ static void poll_pager_state(void) {
         .event_handler = http_event_handler,
         .user_data = &ctx,
         .timeout_ms = HTTP_TIMEOUT_MS,
+        .crt_bundle_attach = esp_crt_bundle_attach,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
     esp_err_t err = esp_http_client_perform(client);
@@ -472,6 +474,7 @@ static void ack_team(int team_id) {
         .event_handler = http_event_handler,
         .user_data = &ctx,
         .timeout_ms = HTTP_TIMEOUT_MS,
+        .crt_bundle_attach = esp_crt_bundle_attach,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
     esp_http_client_set_header(client, "Content-Type", "application/json");
