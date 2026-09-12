@@ -1,0 +1,626 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Floor Ops Console API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: teams
+    description: Team check-in, room radar, and dossier
+  - name: tickets
+    description: Structured cards and GitHub issue drafts
+  - name: dashboard
+    description: Room-wide summaries
+  - name: event
+    description: Event clock settings
+  - name: pager
+    description: Endpoints polled by the external pager hardware
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /teams:
+    get:
+      operationId: listTeams
+      tags: [teams]
+      summary: List all teams (room radar)
+      responses:
+        "200":
+          description: List of teams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Team"
+    post:
+      operationId: createTeam
+      tags: [teams]
+      summary: Check in a new team
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamInput"
+      responses:
+        "201":
+          description: Team created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Team"
+
+  /teams/{teamId}:
+    get:
+      operationId: getTeam
+      tags: [teams]
+      summary: Get a team's dossier (team, pings, tickets)
+      parameters:
+        - $ref: "#/components/parameters/TeamIdParam"
+      responses:
+        "200":
+          description: Team dossier
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDetail"
+        "404":
+          description: Team not found
+    patch:
+      operationId: updateTeam
+      tags: [teams]
+      summary: Update a team's fields
+      parameters:
+        - $ref: "#/components/parameters/TeamIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamUpdate"
+      responses:
+        "200":
+          description: Team updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Team"
+        "404":
+          description: Team not found
+
+  /teams/{teamId}/pings:
+    post:
+      operationId: createTeamPing
+      tags: [teams]
+      summary: Log a ping (team check-in tap, moderator voice note, or system event)
+      parameters:
+        - $ref: "#/components/parameters/TeamIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PingInput"
+      responses:
+        "201":
+          description: Ping created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ping"
+        "404":
+          description: Team not found
+
+  /teams/{teamId}/tickets/draft:
+    post:
+      operationId: draftTicket
+      tags: [tickets]
+      summary: Ask the model to structure recent signals into a card + draft GitHub issue
+      parameters:
+        - $ref: "#/components/parameters/TeamIdParam"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketDraftInput"
+      responses:
+        "201":
+          description: Draft ticket created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "404":
+          description: Team not found
+
+  /tickets:
+    get:
+      operationId: listTickets
+      tags: [tickets]
+      summary: List tickets (help queue), optionally filtered by status
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/TicketStatus"
+      responses:
+        "200":
+          description: List of tickets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ticket"
+
+  /tickets/{ticketId}:
+    patch:
+      operationId: updateTicket
+      tags: [tickets]
+      summary: Edit a draft ticket before filing
+      parameters:
+        - $ref: "#/components/parameters/TicketIdParam"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TicketUpdate"
+      responses:
+        "200":
+          description: Ticket updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "404":
+          description: Ticket not found
+
+  /tickets/{ticketId}/file:
+    post:
+      operationId: fileTicket
+      tags: [tickets]
+      summary: File the ticket — opens a GitHub issue if the team gave a repo, otherwise keeps it Marshal-only
+      parameters:
+        - $ref: "#/components/parameters/TicketIdParam"
+      responses:
+        "200":
+          description: Ticket filed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "404":
+          description: Ticket not found
+
+  /tickets/{ticketId}/discard:
+    post:
+      operationId: discardTicket
+      tags: [tickets]
+      summary: Discard a draft ticket
+      parameters:
+        - $ref: "#/components/parameters/TicketIdParam"
+      responses:
+        "200":
+          description: Ticket discarded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "404":
+          description: Ticket not found
+
+  /tickets/{ticketId}/resolve:
+    post:
+      operationId: resolveTicket
+      tags: [tickets]
+      summary: Mark a ticket resolved — comments and closes the GitHub issue when filed there
+      parameters:
+        - $ref: "#/components/parameters/TicketIdParam"
+      responses:
+        "200":
+          description: Ticket resolved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ticket"
+        "404":
+          description: Ticket not found
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Room-wide counts for the header/help queue
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /event:
+    get:
+      operationId: getEventSettings
+      tags: [event]
+      summary: Get the event clock
+      responses:
+        "200":
+          description: Event settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventSettings"
+    patch:
+      operationId: updateEventSettings
+      tags: [event]
+      summary: Set when the event/showcase ends
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventSettingsUpdate"
+      responses:
+        "200":
+          description: Event settings updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EventSettings"
+
+  /pager/state:
+    get:
+      operationId: getPagerState
+      tags: [pager]
+      summary: Poll endpoint for the pager hardware — idle metrics, help queue, and do-not-disturb list
+      responses:
+        "200":
+          description: Pager state
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PagerState"
+
+  /pager/ack:
+    post:
+      operationId: ackPager
+      tags: [pager]
+      summary: Pager side-button action — "on my way", clears SOS pulse and pings the team's card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PagerAckInput"
+      responses:
+        "200":
+          description: Team acknowledged
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Team"
+        "404":
+          description: Team not found
+
+components:
+  parameters:
+    TeamIdParam:
+      name: teamId
+      in: path
+      required: true
+      schema:
+        type: integer
+    TicketIdParam:
+      name: ticketId
+      in: path
+      required: true
+      schema:
+        type: integer
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    HelpType:
+      type: string
+      enum: [fine, stuck, page_now, do_not_disturb]
+    Phase:
+      type: string
+      enum: [idea, ui, logic, hardware, stuck, demo_ready]
+    BlockerType:
+      type: string
+      enum: [code, bug, design, ui, wifi, flash, auth, scope, team]
+    AccessState:
+      type: string
+      enum:
+        - submitted
+        - access_ok
+        - invite_pending
+        - join_link
+        - public_repl
+        - preview_only
+        - preview_stale
+        - denied
+    PingSource:
+      type: string
+      enum: [team_checkin, team_signal, moderator_note, system]
+    TicketStatus:
+      type: string
+      enum: [draft, filed, discarded, resolved]
+    TicketSink:
+      type: string
+      enum: [github_repo, marshal_only]
+
+    Team:
+      type: object
+      required:
+        - id
+        - name
+        - tableLabel
+        - building
+        - ownerUsername
+        - workspaceUrl
+        - previewUrl
+        - publishUrl
+        - githubUrl
+        - accessState
+        - helpType
+        - phase
+        - moderatorEnRoute
+        - lastPingAt
+        - createdAt
+        - updatedAt
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        tableLabel: { type: string }
+        building: { type: string }
+        ownerUsername: { type: ["string", "null"] }
+        workspaceUrl: { type: ["string", "null"] }
+        previewUrl: { type: ["string", "null"] }
+        publishUrl: { type: ["string", "null"] }
+        githubUrl: { type: ["string", "null"] }
+        accessState: { $ref: "#/components/schemas/AccessState" }
+        helpType: { $ref: "#/components/schemas/HelpType" }
+        phase: { $ref: "#/components/schemas/Phase" }
+        moderatorEnRoute: { type: boolean }
+        lastPingAt: { type: ["string", "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
+    TeamInput:
+      type: object
+      required: [name, tableLabel, building]
+      properties:
+        name: { type: string, minLength: 1 }
+        tableLabel: { type: string, minLength: 1 }
+        building: { type: string, minLength: 1 }
+        ownerUsername: { type: string }
+        workspaceUrl: { type: string }
+        previewUrl: { type: string }
+        publishUrl: { type: string }
+        githubUrl: { type: string }
+        accessState: { $ref: "#/components/schemas/AccessState" }
+        helpType: { $ref: "#/components/schemas/HelpType" }
+
+    TeamUpdate:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        tableLabel: { type: string, minLength: 1 }
+        building: { type: string, minLength: 1 }
+        ownerUsername: { type: ["string", "null"] }
+        workspaceUrl: { type: ["string", "null"] }
+        previewUrl: { type: ["string", "null"] }
+        publishUrl: { type: ["string", "null"] }
+        githubUrl: { type: ["string", "null"] }
+        accessState: { $ref: "#/components/schemas/AccessState" }
+        helpType: { $ref: "#/components/schemas/HelpType" }
+        phase: { $ref: "#/components/schemas/Phase" }
+        moderatorEnRoute: { type: boolean }
+
+    Ping:
+      type: object
+      required: [id, teamId, source, helpType, note, createdAt]
+      properties:
+        id: { type: integer }
+        teamId: { type: integer }
+        source: { $ref: "#/components/schemas/PingSource" }
+        helpType:
+          oneOf:
+            - $ref: "#/components/schemas/HelpType"
+            - type: "null"
+        note: { type: string }
+        createdAt: { type: string, format: date-time }
+
+    PingInput:
+      type: object
+      required: [source, note]
+      properties:
+        source: { $ref: "#/components/schemas/PingSource" }
+        note: { type: string, minLength: 1 }
+        helpType: { $ref: "#/components/schemas/HelpType" }
+
+    TeamDetail:
+      type: object
+      required: [team, pings, tickets]
+      properties:
+        team: { $ref: "#/components/schemas/Team" }
+        pings:
+          type: array
+          items: { $ref: "#/components/schemas/Ping" }
+        tickets:
+          type: array
+          items: { $ref: "#/components/schemas/Ticket" }
+
+    Ticket:
+      type: object
+      required:
+        - id
+        - teamId
+        - status
+        - phase
+        - blockerType
+        - helpType
+        - skill
+        - summary
+        - etaMinutes
+        - risk
+        - issueTitle
+        - issueBody
+        - issueLabels
+        - sink
+        - issueUrl
+        - issueNumber
+        - createdAt
+        - filedAt
+        - resolvedAt
+      properties:
+        id: { type: integer }
+        teamId: { type: integer }
+        status: { $ref: "#/components/schemas/TicketStatus" }
+        phase:
+          oneOf:
+            - $ref: "#/components/schemas/Phase"
+            - type: "null"
+        blockerType:
+          oneOf:
+            - $ref: "#/components/schemas/BlockerType"
+            - type: "null"
+        helpType: { $ref: "#/components/schemas/HelpType" }
+        skill: { type: ["string", "null"] }
+        summary: { type: string }
+        etaMinutes: { type: ["integer", "null"] }
+        risk: { type: ["string", "null"] }
+        issueTitle: { type: string }
+        issueBody: { type: string }
+        issueLabels:
+          type: array
+          items: { type: string }
+        sink:
+          oneOf:
+            - $ref: "#/components/schemas/TicketSink"
+            - type: "null"
+        issueUrl: { type: ["string", "null"] }
+        issueNumber: { type: ["integer", "null"] }
+        createdAt: { type: string, format: date-time }
+        filedAt: { type: ["string", "null"], format: date-time }
+        resolvedAt: { type: ["string", "null"], format: date-time }
+
+    TicketDraftInput:
+      type: object
+      properties:
+        moderatorNote: { type: string }
+
+    TicketUpdate:
+      type: object
+      properties:
+        phase: { $ref: "#/components/schemas/Phase" }
+        blockerType: { $ref: "#/components/schemas/BlockerType" }
+        helpType: { $ref: "#/components/schemas/HelpType" }
+        skill: { type: ["string", "null"] }
+        summary: { type: string, minLength: 1 }
+        etaMinutes: { type: ["integer", "null"] }
+        risk: { type: ["string", "null"] }
+        issueTitle: { type: string, minLength: 1 }
+        issueBody: { type: string }
+        issueLabels:
+          type: array
+          items: { type: string }
+
+    DashboardSummary:
+      type: object
+      required:
+        - totalTeams
+        - pageNowCount
+        - stuckCount
+        - silentCount
+        - doNotDisturbCount
+        - draftTicketsCount
+        - filedTicketsCount
+        - resolvedTicketsCount
+      properties:
+        totalTeams: { type: integer }
+        pageNowCount: { type: integer }
+        stuckCount: { type: integer }
+        silentCount: { type: integer }
+        doNotDisturbCount: { type: integer }
+        draftTicketsCount: { type: integer }
+        filedTicketsCount: { type: integer }
+        resolvedTicketsCount: { type: integer }
+
+    EventSettings:
+      type: object
+      required: [endsAt]
+      properties:
+        endsAt: { type: ["string", "null"], format: date-time }
+
+    EventSettingsUpdate:
+      type: object
+      required: [endsAt]
+      properties:
+        endsAt: { type: ["string", "null"], format: date-time }
+
+    PagerQueueItem:
+      type: object
+      required:
+        - ticketId
+        - teamId
+        - teamName
+        - tableLabel
+        - blocker
+        - helpType
+        - ageMinutes
+        - moderatorEnRoute
+      properties:
+        ticketId: { type: ["integer", "null"] }
+        teamId: { type: integer }
+        teamName: { type: string }
+        tableLabel: { type: string }
+        blocker: { type: string }
+        helpType: { $ref: "#/components/schemas/HelpType" }
+        ageMinutes: { type: integer }
+        moderatorEnRoute: { type: boolean }
+
+    PagerState:
+      type: object
+      required: [minutesLeft, openSosCount, queue, doNotDisturb]
+      properties:
+        minutesLeft: { type: ["integer", "null"] }
+        openSosCount: { type: integer }
+        queue:
+          type: array
+          items: { $ref: "#/components/schemas/PagerQueueItem" }
+        doNotDisturb:
+          type: array
+          items: { $ref: "#/components/schemas/PagerQueueItem" }
+
+    PagerAckInput:
+      type: object
+      required: [teamId]
+      properties:
+        teamId: { type: integer }

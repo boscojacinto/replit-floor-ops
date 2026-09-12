@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Floor Ops Console"
+description = "A live event-floor operations console for a hackathon moderator (marshal). Teams check in with a table, what they're building, and optional workspace/preview/GitHub URLs. The moderator sees a room radar of every team, an ordered help queue (page-now, stuck, silent, design-crit, do-not-disturb), and a team dossier with a timeline of pings and notes. A model drafts a structured card and a GitHub issue from the latest signals; the moderator approves, edits, or discards before it files to the team's repo (or stays as a Marshal-only ticket when no repo exists). A lightweight pager API lets an external hardware device (built outside this project) poll the queue and acknowledge tickets."
+version = "1.0.0"
+id = "artifacts/floor-ops"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21438
+
+[services.development]
+run = "pnpm --filter @workspace/floor-ops run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/floor-ops", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/floor-ops/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21438"
+BASE_PATH = "/"

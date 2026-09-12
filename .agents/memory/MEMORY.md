@@ -1,0 +1,3 @@
+- [Orval codegen dom.iterable fix](orval-headers-entries-fix.md) — generated API client fails typecheck calling `Headers.entries()` unless `dom.iterable` is added to that package's tsconfig `lib` array.
+- [Anthropic vs OpenAI integration scope](anthropic-vs-openai-integration.md) — the OpenAI AI-integration proxy only ever serves OpenAI's own models; asking it for a Claude model name will not route to Anthropic.
+- [Anthropic structured JSON output](anthropic-structured-output.md) — get reliable structured output from Claude with a forced single-tool `tool_choice`, not a JSON-mode prompt like OpenAI's `response_format`.

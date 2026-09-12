@@ -1,0 +1,699 @@
+The icebreaker is becoming a floor-ops console. I’ll map what a moderator can track, how a model files GitHub issues, and what else that system can do — including the AMOLED as a pager.This is no longer an icebreaker. It is a floor operating system: teams emit signals, you walk the room with a pager, the laptop is the tower, and a model turns messy talk into GitHub issues.
+The 1.8" AMOLED cannot be the dashboard. It is the thing in your pocket that says who to walk to next. The admin app is Replit. GitHub is the paper trail. Your connected GitHub account can already create issues, label them, comment, and read commits — so the “model files the ticket” loop is real, not vapor.
+
+The loop
+textteam pings / you jot a note / commits land
+        ↓
+model structures the event
+        ↓
+dashboard queue + pager buzz
+        ↓
+you approve (or auto-file)
+        ↓
+GitHub issue on that team's repo
+        ↓
+team sees a concrete next step, not a vibe
+If any step needs more than ~15 seconds from a team, it will not get used at Ship It.
+
+What you actually track (one card per team)
+Keep one object. Everything else is a view.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FieldWhyBuildingOne line. “Voice pebble that posts to Replit.”Phaseidea → ui → logic → hardware → stuck → demo-readyBlockerFree text + type: code bug design ui wifi flash auth scope teamHelp typerubber-duck debug design-crit pair page-now leave-us-aloneSkill neededesp-idf lvgl replit github audio productETA vs clockTheir estimate + time to showcaseLast signalMinutes since they spoke / committed / pingedCommitsLast SHA, message, burst or silencePagesOpen SOS + who is walking overThreadShort log: design talk, bug talk, UI talk — not Slack
+Silence is a signal. A team with no ping and no commit for 20 minutes is more important than a team typing “all good.”
+
+How signal gets in (or the whole thing dies)
+Pick two intake paths, not seven.
+
+Table QR → 4 taps
+Building / Stuck / Need a human / Do not disturb.
+Optional one-line + paste error. That is the whole team UI.
+Moderator voice or scribble
+You walk up, hold the device or phone, talk:
+“Table 4, LVGL touch inverted on V2, need 10 minutes, design later.”
+Model extracts the card. This is how you keep the board true without making them fill forms.
+GitHub / Replit as a pulse
+Poll list_commits on the repo they pasted at check-in.
+Burst of commits = moving. Zero commits + “we’re fine” = lying or lost.
+
+Replit-only teams: store the Replit URL as the project, GitHub as optional. Do not block check-in on a repo.
+
+Admin dashboard (the model lives here)
+Four panes. That is enough.
+1. Room radar
+
+Every team as a tile. Color = help type. Pulse = SOS. Ghost = silent. Sort by “walk here next,” not alphabetically.
+2. Help queue
+
+A single ordered list:
+
+page-now
+debug with ETA > time left
+silent + not demo-ready
+design-crit (can wait)
+do-not-disturb
+
+Each row: team, one-line blocker, skill, age of ticket, assign-to-mentor.
+3. Team dossier
+
+Timeline: pings, your notes, commit list, open issues, model-drafted tickets waiting for you.
+4. Dispatch
+
+The model’s output, never raw dump:
+
+structured card update
+suggested next visit
+draft GitHub issue
+“this looks like Table 9’s LVGL bug” (cluster)
+
+You tap File, Edit then file, or Discard. Default should not be silent auto-file on first ship. Auto-file once you trust the prompt, and only with a marshal label so teams can filter it.
+
+The model on the dashboard
+Treat it as a clerk, not an architect.
+In
+
+last 5 signals from that team
+your latest voice/note
+last 8 commit messages
+open issues (so it does not duplicate)
+event clock (time to 4:00 / showcase)
+
+Out (JSON, then render)
+JSON{
+  "phase": "stuck",
+  "blocker_type": "bug",
+  "help_type": "debug",
+  "skill": "lvgl",
+  "summary": "CST820 touch Y-axis inverted after rotation",
+  "eta_minutes": 25,
+  "risk": "may miss showcase if still on panel init",
+  "cluster_with": ["table-9"],
+  "issue": {
+    "title": "Touch Y-axis inverted on V2 (CST820) after 90° rotation",
+    "labels": ["bug", "hardware", "marshal"],
+    "body": "..."
+  },
+  "pager": "T4 · touch axis · 8m waiting"
+}
+Issue body template (this is what makes auto-file useful)
+
+What they were trying to ship
+Symptom vs guess
+Hardware/version if relevant (V1 vs V2)
+What you already tried
+Time left / why this ticket exists now
+Suggested first check (one, not a novel)
+Links: Replit, dashboard card, commit SHA
+
+Labels worth creating once: marshal, blocked, design, bug, help-wanted, showcase, wont-fix-today.
+GitHub side is already there: create/update issues, labels, comments, read commits and existing issues. Duplicate check = list_issues + a similarity pass before create.
+Do not let the model:
+
+rewrite their product
+open five tickets from one ramble
+file into the wrong repo
+assign random mentors without a roster
+
+One ticket per real decision. Design recs are a design issue titled like a decision, not a vibe: “Hide settings until after first successful flash.”
+
+Where the Waveshare board fits
+You have one brick. Give it to the moderator.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FaceContentIdletime left in the room + open SOS countPageteam name, table, one-line blocker, help typeAfter visittap done / come back / filedFlipdo-not-disturb list so you do not interrupt a flow
+Shake = next team in the queue. Side button = “on my way” (clears SOS on the dashboard, pings that team’s card). Speaker = only for page-now, otherwise you will hate it by 1pm.
+That is the original icebreaker, inverted: the room does not play with the toy. The toy tells you who is drowning.
+
+More ideas on top of this
+Routing and fairness
+
+Mentor marketplace: you tag people lvgl product replit. Queue assigns skill, not whoever is nearest the snacks.
+Interrupt budget: each team gets 2 human visits unless SOS. Stops the loud table from eating the room.
+Pairing: two teams stuck on the same bug get a “go sit together” card instead of two mentor trips.
+Dead-man’s switch: 20 minutes silent + phase ≠ demo-ready → auto-queue a check-in, not a lecture.
+
+Better signals
+
+leave-us-alone is a first-class help type. Respect it on the pager.
+Commit heartbeat vs talk heartbeat. Talking a lot + no commits = design spiral. Commits + “stuck” = they need a debugger, not a PM.
+Error paste box: they dump a stack, model tags flash vs wifi vs touch vs build.
+Showcase readiness score: has URL, has one demo script sentence, has known failure mode. Sort the 20-minute showcase from this, not from who shouts.
+
+GitHub as the memory of the room
+
+One parent issue per team (Ship It — <name>) and child tickets for each real blocker.
+After you unstick them, model comments resolved-on-floor and closes, so the repo is not a graveyard of panic.
+Design-only lane: tickets that must not block compile. Different column.
+End-of-day digest issue: what the room learned (V2 touch quirk, Replit env, AMOLED init). That digest is the thing TPF can reuse next city.
+
+Pager / room theater
+
+Table tents with QR + a 3-state LED story on your dashboard wall: green / amber / red.
+Public “now serving” on a projector: not names of struggling teams, just “2 debug, 1 design, 12 quiet.” Dignity matters.
+Team-facing receipt: after you file, they get the issue URL in the same form they pinged from.
+
+Things to steal from other ops systems
+
+Hospital triage tags: immediate / soon / later / home (won’t ship today, wrap the demo).
+Kitchen ticket times: age of every SOS visible in huge type.
+Flight board: destination = demo-ready, delays = blockers.
+
+Explicitly skip today
+
+Per-team hardware.
+Always-on mic in the room.
+Auto-reading their entire Replit agent transcript.
+Scoring teams. This is support, not a leaderboard.
+
+
+What I would ship in the time you have left
+The event is already running. Full OS will not land before 4pm. A thin slice will.
+
+Check-in form: team, what they’re building, GitHub or Replit URL, 4 help buttons.
+Dashboard: tiles + queue + notes field.
+Model button: “structure this note + draft issue.”
+Approve → github___issue_write.
+If the board is in your bag: one screen that polls /next-page.
+
+That is enough to demo: team taps stuck → you see it → model drafts → issue appears on their repo → pager says walk to table 4.
+
+If you want to keep going, next message pick a slice and I will spec it tightly:
+
+data model + JSON for team cards and model I/O
+Replit dashboard screens (fields, queue rules, issue preview)
+the exact system prompt for triage + GitHub issue drafting
+AMOLED pager protocol (the 3 endpoints the brick needs)
+
+Which of those do you want first?I guess not all teams will host on github, in this case can  be do something like this
+n replit how is the code usually hosted?
+In Replit, code is hosted directly in the cloud inside an isolated, browser-based container environment. [1, 2]
+How Hosting Works on Replit
+
+Cloud-Based Workspace: Every project (called a "Repl") runs on a cloud virtual machine with its own file system, terminal, and automatic package management. You do not need to configure a local server or environment on your own computer. [1, 2, 3, 4]
+Instant Preview and URLs: When you run a web server or application inside Replit, it automatically exposes your app via a unique subdomain (like your-repl-name.username.repl.co), letting you view and share your live code instantly. [1, 2]
+Built-in Deployments: Replit offers a Deployments feature that lets you publish your project to production with one click, offering persistent uptime, custom domains, and dedicated resources via Reserved VMs. [1, 2]
+Alternative Exporting: If you prefer not to host production apps directly on Replit, you can push your code via version control to GitHub and host it on external platforms like Netlify, Vercel, or AWS. [1, 2, 3]
+For a deeper dive into the platform's cloud capabilities, check out Replit or read about their approach from localhost to live. [1]
+If you're working on a specific project, let me know:
+What programming language or framework are you using?
+Are you trying to run a quick prototype or deploy a live website/app?
+I can give you the exact steps you need.
+YouTube·Replit
+  Getting Started with Replit
+  hey it's Matt with Reboot. and this video is the first step to building your own website. and today I'm going to discuss what Repl...
+  11:16
+Replit
+  Publish Apps - Replit
+  Replit offers flexible hosting for any type of project to share your ideas with the world. · Instant websites and client-side apps...
+Replit
+  Replit vs Visual Studio Code: the complete comparison guide
+  Replit delivers a full-stack workflow inside any browser. Vibe coding is at the core of how Replit works: describe what you want t...
+Show all
+How to share an instant preview and URL and will it be public by default?
+Yes, by default, both your instant preview URL and your published app are public to the web. Anyone who gets a hold of the generated link can view your live app. [1, 2]
+Replit handles URLs in two distinct stages: Development Previews and Published Deployments. [1]
+
+
+Instant Preview (Development URL)
+When you click Run on a web application, Replit immediately generates a temporary preview window and a development URL formatted as UUID.servername.replit.dev. [1]
+
+
+How to share it: Click the text ending in .replit.dev inside the workspace's built-in browser location bar to copy it, or open it in a new tab and copy the address. [1]
+Is it public? Yes, by default. Anyone with the link can view it, making it perfect for quick feedback from a peer. [1]
+The Catch: It is temporary. It only stays live while you are actively working inside the Replit editor and changes frequently when you reopen the app. [1]
+How to make it private: If you want to lock it down during development, go to Developer Tools → Networking tab → toggle on Private development URL. This restricts access so only you and authorized workspace collaborators can see it. [1]
+
+
+Live Production (Published URL)
+For permanent sharing, you must officially deploy your work. [1, 2]
+
+
+How to share it: Click the rocket icon or Publish button in the top-right corner of your workspace. Replit will package your app and issue a permanent, stable link under the your-app-name.replit.app domain.
+Is it public? Yes, apps published from personal workspaces default to Public.
+How to change visibility: Before hitting final confirmation in the publishing dialog, navigate to the "Who can access your app" configuration panel. You can change it from Public to Password protected, Workspace only, or Invite only. (Note: resticting access to workspace/invite-only requires a paid tier like the Core or Pro plan). [1, 2, 3, 4]
+For step-by-step visual guidance, check out the official Replit Docs on Development URLs and their guide on how to Publish Your App.
+Are you trying to share a temporary live preview of a web app with someone, or do you want to invite them into the workspace so they can edit the source code with you?
+An a person what can i see in another teams development URL
+When you visit another team's Replit development URL (the temporary UUID.servername.replit.dev link), what you see depends entirely on whether you are just looking at the rendered web app or if you have been invited into the workspace code editor. [1, 2]
+
+
+If you only have the .replit.dev URL (Web Visitor)
+If a team simply sends you their active development link, you act as an external user testing the application. [1]
+
+
+What you CAN see: The front-end user interface exactly as it looks in a browser. You can click buttons, fill out forms, and test the app's current functionality in real-time. [1]
+What you CANNOT see: You cannot see the source code, the file directory, the terminal, or the server logs. It looks like a normal website. [1]
+Important Caveat: You will only see the app if the team is actively running the code in their workspace. If they stop the project or close their browser tabs, the URL will break and display an error page. [1, 2]
+
+
+If you click "View Code" or look at the Workspace URL
+If they share the main project workspace link (://replit.com) or you navigate to their public profile:
+
+
+For a Public Repl: You can see all the source code, files, and configurations. You can also "Fork" (copy) the project into your own account. However, you cannot see their private environment variables (like API keys or database passwords saved in the Replit Secrets panel). [1]
+For a Private / Team Repl: If you are not an authorized member of their team workspace, trying to view the workspace will result in a "404 Not Found" or access-denied page. [1, 2]
+Summary: What is exposed?
+
+text| If they send you...           | Can you see the live web page? | Can you see the source code? | Can you see their API keys/Secrets? |
+| ----------------------------- | ------------------------------ | ---------------------------- | ----------------------------------- |
+| Development URL (.replit.dev) | Yes (while running)            | No                           | No                                  |
+| Public Workspace URL          | Yes (via the preview pane)     | Yes                          | No                                  |
+| Private Team Workspace URL    | No (Blocked by login)          | No (Blocked by login)        | No                                  |
+Are you trying to protect your own team's code from being seen by outsiders, or are you trying to troubleshoot an app that another team sent you? Let me know so I can guide you on the right security or testing setup.Yes. Most tables today will live only on Replit. GitHub is optional. The dashboard should treat Replit as the default home, and GitHub as a bolt-on when they actually have a repo.
+Your summary of hosting is right. Tight version:
+
+How Replit actually hosts code
+The source of truth is the Replit App / workspace — a cloud VM with a filesystem, terminal, and editor. Nothing has to exist on GitHub. Git inside Replit is a pane they may never open.
+There are three different URLs, and they are not interchangeable:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+LinkLooks likeWhat it isStays up?Public by default?Dev previewuuid.servername.replit.devLive app while they hit RunOnly while the workspace is running. URL can change when they reopenYes. Anyone with the link sees the appPublished appname.replit.appProduction deployYes, until they unpublishYes, unless they pick password / workspace / inviteWorkspacereplit.com/@user/appEditor + files + previewYesOnly if the Repl is set Public. Private = 404 to outsiders
+Dev preview is for “look at what we have.” Published is for “this is the ship URL.” Workspace is for “look at the code.”
+Share a preview: Run the app → Preview location bar → click the {...}.replit.dev text → copy. That is the instant link. To lock it: Developer tools → Networking → Private development URL. Then only the owner and invited collaborators can open it.
+Publish: rocket / Publish → stable .replit.app → choose Public / Password / Workspace only / Invite only.
+
+What you can see on another team’s .replit.dev
+If they only send the development URL, you are a browser tester, not a collaborator.
+You can
+
+See the current UI
+Click, type, break flows
+Judge design, copy, empty states, mobile-ish layout
+Notice the app is down (they stopped Run, or the URL rotated)
+
+You cannot
+
+See source, file tree, terminal, or server logs
+See Secrets / API keys
+Leave a comment in their editor
+Rely on the link after they close the tab — it dies or changes
+
+If they also send a public workspace URL, you can read (and fork) the code. Secrets still stay hidden. If the workspace is private and you are not invited, you get a 404. A join link is the only way you can edit with them.
+So: a preview URL is enough for UI / product / “does the demo work.” It is not enough for commit history or code triage.
+
+What Marshal should do when there is no GitHub
+Do not block on GitHub issues. Give every team a home record in your dashboard, then attach whichever hosts they actually have.
+Check-in fields
+
+Team name
+One-line what they’re building
+workspace_url (optional)
+preview_url (the .replit.dev, expect it to go stale)
+publish_url (the .replit.app if they deploy)
+github_url (optional)
+Visibility: preview public / private, workspace public / private
+
+Ticket backend = always Marshal, sometimes GitHub
+textevery help event
+    → Marshal ticket (your DB)
+         ├─ if github_url exists → also file github issue
+         └─ else → ticket lives only in Marshal
+              + share ticket URL with the team
+              + optional: file on YOUR org repo as a parking lot
+That last option is the clean fallback: one repo you own, e.g. tpf/shipit-mumbai-floor, one issue per team, labels table-4, design, blocked. You still “open a GitHub issue,” just not on their project. They get the link in the same form they used to ping you.
+What the model is allowed to do without their source
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Signal you haveModel canModel must not pretendPreview URL worksDesign / UX recs, broken flow notes, showcase scriptLine-level code fixesPreview URL deadMark preview-stale, ask them to refresh the link“App is broken”Public workspaceRead files, draft a real code issueTouch SecretsPrivate workspace, no inviteUse their pasted error + your floor noteInvent a stack tracePublished .replit.appTreat as demo URL for the 20-min showcaseTreat as their editor
+So auto-issue for design is fine off a preview. Auto-issue for bugs needs a paste, a screenshot, a floor note, or workspace access.
+Commit history without GitHub
+You will not get list_commits on a Replit-only team. Replace that pulse with:
+
+last ping time
+last preview-url update
+last time the preview responded (your dashboard can hit it every few minutes: 200 vs dead)
+optional: they tap we shipped a change on the QR form
+
+That is a heartbeat. It is not git. Do not fake a commit graph.
+If you need to see code
+Ask for one of:
+
+Public Repl toggle (fastest, they may not want this)
+Invite / join link for the moderator account
+Paste the file + error into the ping form
+
+Do not plan to scrape .replit.dev for source. It is not there.
+
+How this changes the team card
+texthost: replit | github | both
+preview: live | stale | private | none
+workspace: public | private | unknown
+published: yes | no
+issue_sink: github_repo | marshal_only | floor_parking_lot
+Pager line examples:
+
+T4 · preview down · 12m silent
+T7 · UI crit ready · .replit.dev live
+T2 · bug · no source · need paste or invite
+
+Help types stay the same. Only the sink for the ticket changes.
+
+Practical rule for today
+
+Need to look at the product → .replit.dev or .replit.app
+Need to look at the code → public workspace or invite
+Need a written recommendation → Marshal ticket always; GitHub issue only if they gave a repo, otherwise your parking-lot repo or the ticket link
+Never treat a dead preview as “team is stuck in code.” They may have just stopped Run.
+
+If you want next, I can write the exact check-in form + the model prompt that branches: has_github vs replit_only vs preview_only, including the issue body templates for each.I want the teams to give me workspace access, so an onboarding of team flow via QR or so is neededAsk for project invite, not “add me to your whole Replit workspace.” On a personal Replit account, other people join as guests on that one App. That is the right shape for a floor moderator.
+Join links grant edit. Prefer they type your username and set Read-only. Use a join link only if invite-by-name fails or they are in a hurry.
+
+What you are collecting
+One QR → one team record.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+FieldRequiredWhyTable / team nameyespager + radarWhat you’re buildingyesone lineReplit username of owneryesso you can find themWorkspace URLyesreplit.com/@user/appAccess methodyesinvited you / join link / public repl / preview onlyJoin linkif they chose thatpastePreview URLnice.replit.dev for UI checksPublish URLlater.replit.appGitHuboptionalissue sinkHelp right nowyesfine / stuck / come now / leave us
+Your floor account should be a dedicated Replit user (shipit-floor or similar), not your personal account. Put that name on every tent card.
+
+How they should grant access (tell them this, in this order)
+Best — Invite by username, Read-only
+
+Open the Replit App they are building.
+Top right: Invite.
+Type YOUR_REPLIT_USERNAME.
+Role: Read-only (or Viewer). Editor only if they want you to pair.
+Send.
+Paste the workspace URL into the QR form.
+
+OK — Private join link (edit access)
+
+Invite → turn Private join link on → Copy join link.
+Paste that link in the form.
+After the event: regenerate the join link so you cannot walk back in.
+Removing you from the collaborator list is not enough while the old join link still works.
+
+If they are out of seats
+Core allows 5 collaborators, Pro 15. The moderator uses a seat. If the table is full: make the Repl Public (read-only code, no Secrets) or skip to preview-only.
+Do not ask them to
+
+Add you as workspace Member on a Team workspace (that is every project they own).
+Make you Owner.
+Turn the Repl public unless seats are gone and they are fine with visible source.
+
+
+QR flow (phone, ~90 seconds)
+Print one QR per table. Same URL, ?table=12 so the form arrives pre-filled.
+Screen 0 — Why
+
+“Floor help works if we can open your Replit App. Read-only is enough. We will not touch Secrets. You can kick us at 4pm.”
+Screen 1 — Who
+
+Team name, table (locked from QR), one-line build.
+Screen 2 — Pick a door
+text○ Invite @shipit-floor as Read-only   ← recommended
+○ Paste a private join link           ← edit access, warn
+○ Make the Repl public                ← no seat used
+○ Preview URL only                    ← we can see the app, not the code
+Screen 3 — Do the Replit clicks
+
+Show only the steps for the door they picked. Three numbered lines, one screenshot-worth of UI labels: Invite → username → Read-only.
+Screen 4 — Paste proof
+
+Workspace URL always. Join link if that door. Preview URL if they have it.
+Screen 5 — Status + ping
+
+We’re fine / Stuck / Page us / Do not disturb.
+
+Done. They get a team page URL they can reopen from the same QR.
+Do not put GitHub on the critical path. Second page, “optional.”
+
+Tent card copy (print this)
+textSHIP IT FLOOR
+Scan to check in  (QR)
+
+1. Invite → add  @shipit-floor
+2. Role: Read-only
+3. Paste your replit.com/@… URL
+
+Need us now? Scan → Page us
+Out of invite seats? Make Repl public, or preview-only
+One extra poster at the door with the same QR and no table id (they type the table).
+
+What your dashboard does after submit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+StateMeaningYou dosubmittedform in, not verified—access_okyou can open workspacecode + design helpinvite_pendingthey typed the name, mail not acceptedping themjoin_linkyou have edit via linkuse sparingly, regenerate reminder at 4public_replsource visible, not invitedfine for triagepreview_only.replit.dev onlyUI help onlypreview_stalepreview 404 / rotatedask them to refresh URLdeniedprivate, no inviteyou cannot see code
+Verification: you (or a tiny worker) open the workspace URL while logged in as shipit-floor. Editor loads → access_ok. Login wall / 404 → still pending.
+Pager only treats a team as “debuggable” when state is access_ok, join_link, or public_repl. Otherwise help type is capped at design / process.
+
+Trust, so they actually click Invite
+Put this on screen 0 and the tent:
+
+Read-only unless they ask you to pair
+Secrets pane stays hidden either way
+One project, not their whole account
+Revoke: Invite → your name → None, and regenerate join link if they used one
+You will not commit, publish, or spend their credits
+
+If a table refuses: preview_only is still a valid onboard. Do not block them from the help queue.
+
+Thin slice you can run this afternoon
+
+Replit form: the five screens above.
+Table QR stickers (/onboard?table=N).
+Admin list: team, door they picked, workspace URL, access state, last ping.
+You manually mark access_ok the first hour. Automate later.
+Optional: after they submit a join link, dashboard shows a red chip edit access — regen at 4.
+
+That is the whole onboarding product. The model and GitHub issues only turn on once access_ok is true.
+If you want next, I can write either the exact Replit form prompt (fields + copy + states) or the printed tent + QR URL scheme.
