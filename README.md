@@ -10,7 +10,7 @@ A live floor-ops console for a hackathon marshal: check in teams, watch a room-w
 - **Team dossier** — a full timeline of check-ins, moderator notes, and system events for one team, plus its ticket history.
 - **AI-drafted tickets** — one click turns a team's recent signals (pings + an optional moderator note) into a structured triage card and a draft GitHub issue body, using Claude (Anthropic) via Replit AI Integrations. The marshal always reviews, edits, or discards the draft before anything is filed.
 - **GitHub filing with fallback** — filing opens a real issue on the team's repo if they gave one; if they didn't, or GitHub rejects the write, it falls back to a Marshal-only ticket automatically. Resolving a filed ticket comments on and closes the GitHub issue.
-- **Pager hardware API** — a small set of stub REST endpoints (`/pager/state`, `/pager/ack`) meant to be polled by an external hardware pager (see [`hardware/esp32-s3-pager/`](hardware/esp32-s3-pager/README.md) for a Waveshare ESP32-S3 firmware stub). The pager itself is not part of this repo's build — you flash and run it separately.
+- **Pager hardware API** — a small set of stub REST endpoints (`/pager/state`, `/pager/ack`) meant to be polled by an external hardware pager. Two firmware options: a Serial-only stub for any generic ESP32-S3 devkit ([`hardware/esp32-s3-pager/`](hardware/esp32-s3-pager/README.md)), and a full on-device dashboard for the [Waveshare ESP32-S3-Touch-AMOLED-1.8](hardware/esp32-s3-amoled-pager/README.md) with the queue drawn on its built-in touchscreen. The pager itself is not part of this repo's build — you flash and run it separately.
 
 ## Architecture
 
@@ -28,7 +28,8 @@ lib/
   db/             Drizzle ORM schema + client (Postgres)
   integrations-anthropic-ai/  Anthropic SDK client + batch helpers (Replit AI Integrations proxy)
 hardware/
-  esp32-s3-pager/ Firmware stub + wiring guide for a Waveshare ESP32-S3 physical pager
+  esp32-s3-pager/       Serial-only firmware stub + wiring guide for a generic ESP32-S3 devkit
+  esp32-s3-amoled-pager/ On-device AMOLED dashboard firmware for the Waveshare ESP32-S3-Touch-AMOLED-1.8
 ```
 
 **The OpenAPI spec is the source of truth for the API.** Route paths, request/response shapes, and the generated Zod schemas and React hooks all derive from `lib/api-spec/openapi.yaml`. After editing it, regenerate before touching routes or frontend code:
@@ -107,7 +108,10 @@ Full contract: [`lib/api-spec/openapi.yaml`](lib/api-spec/openapi.yaml). All rou
 
 ## Pager hardware
 
-The `pager` endpoints are REST stubs meant for an external device — nothing in this repo runs on the hardware itself. See [`hardware/esp32-s3-pager/README.md`](hardware/esp32-s3-pager/README.md) for a wiring guide and a starter firmware sketch for a Waveshare ESP32-S3 board that polls the help queue and acknowledges tickets from a physical button.
+The `pager` endpoints are REST stubs meant for an external device — nothing in this repo runs on the hardware itself.
+
+- [`hardware/esp32-s3-pager/README.md`](hardware/esp32-s3-pager/README.md) — a starter firmware sketch (Arduino) for any generic ESP32-S3 devkit that polls the help queue over Serial and acknowledges tickets from a physical button. No display driving.
+- [`hardware/esp32-s3-amoled-pager/README.md`](hardware/esp32-s3-amoled-pager/README.md) — an ESP-IDF firmware project for the Waveshare ESP32-S3-Touch-AMOLED-1.8 that renders the queue on its built-in AMOLED (minutes left, SOS banner, top-of-queue card) and acknowledges tickets with a touch button, built on Waveshare's official managed BSP component.
 
 ## Deployment
 
