@@ -51,6 +51,7 @@ Thumbs.db
 # Pager hardware — local Wi-Fi credentials, never commit
 hardware/esp32-s3-pager/pager_config.h
 hardware/esp32-s3-amoled-pager/main/pager_config.h
+hardware/esp32-s3-amoled-team-pager/main/pager_config.h
 
 # ESP-IDF build artifacts and managed component downloads
 hardware/esp32-s3-amoled-pager/build/
@@ -58,3 +59,8 @@ hardware/esp32-s3-amoled-pager/managed_components/
 hardware/esp32-s3-amoled-pager/dependencies.lock
 hardware/esp32-s3-amoled-pager/sdkconfig
 hardware/esp32-s3-amoled-pager/sdkconfig.old
+hardware/esp32-s3-amoled-team-pager/build/
+hardware/esp32-s3-amoled-team-pager/managed_components/
+hardware/esp32-s3-amoled-team-pager/dependencies.lock
+hardware/esp32-s3-amoled-team-pager/sdkconfig
+hardware/esp32-s3-amoled-team-pager/sdkconfig.old

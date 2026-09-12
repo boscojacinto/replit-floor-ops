@@ -1,0 +1,17 @@
+// Copy this file to pager_config.h and fill in your own values.
+// pager_config.h is git-ignored so real credentials never get committed.
+//
+// Each physical unit is configured for exactly one team -- TEAM_ID must
+// match a real team's id in the Floor Ops Console (visible in the URL on
+// that team's dossier page, e.g. /teams/3).
+
+#pragma once
+
+#define WIFI_SSID     "your-wifi-name"
+#define WIFI_PASSWORD "your-wifi-password"
+
+// Must include the /api prefix and no trailing slash.
+#define API_BASE_URL "https://your-repl-domain.replit.dev/api"
+
+#define TEAM_ID   1
+#define TEAM_NAME "Your Team Name"
